@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<!-- Подключение Bootstrap чтобы все выглядело красиво -->
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css">
+	<title>«Города-реки»</title>
+	<!-- Свои стили -->
+	<style>
+		body {
+			background: #fcfcfc;
+		}
+		#button {
+			margin: 0 auto;
+			display: block;
+		}
+		#baton {
+			position: absolute;
+			left:-100px;
+			top:10px;
+		}
+		
+		::-webkit-input-placeholder {
+			text-align:center;
+			font-size: large;
+			font-weight: bold;
+		}
+	</style>
+
+<script>
+	function table(){
+		console.log("успешно");
+document.getElementsByClassName('table')
+let table = document.createElement('table')
+let thead = document.createElement('thead');
+let tbody = document.createElement('tbody');
+
+table.appendChild(thead);
+table.appendChild(tbody);
+
+let row_1 = document.createElement("tr");
+
+let heading_1 = document.createElement("th");
+heading_1.innerHTML = "Игрок:";
+let heading_2 = document.createElement("th");
+heading_2.innerHTML = "Имя";
+let heading_3 = document.createElement("th");
+heading_3.innerHTML = "Город";
+let heading_4 = document.createElement("th");
+heading_4.innerHTML = "Растение";
+let heading_5 = document.createElement("th");
+heading_5.innerHTML = "Животное";
+let heading_6 = document.createElement("th");
+heading_6.innerHTML = "Река";
+
+row_1.appendChild(heading_1);
+row_1.appendChild(heading_2);
+row_1.appendChild(heading_3);
+row_1.appendChild(heading_4);
+row_1.appendChild(heading_5);
+row_1.appendChild(heading_6);
+
+thead.appendChild(row_1);}
+</script>
+
+</head>
+	<body>
+	<!-- Создание меню на сайте (без функций) -->
+
+	<!-- Основная часть страницы -->
+	<div class="container">
+		<div class="py-5 text-center">
+			<h2>Имя-растение-животное-река</h2>
+			<p class="lead">для игры укажите ваше имя и впишите слова в соответствующие поля
+				<br>
+			выиграет тот, у кого окажется больше оригинальных названий(как только первый человек нажмет кнопку "Отправить" ) </p>
+		</div>
+
+		<div class="col">	
+
+			<div >
+				<div id="all_mess" class="table"></div>
+				<button id="baton" onclick="table()">батон</button>
+
+			</div>
+
+			<div class="row">
+				<form id="messForm">
+					<label for="name">Ваше имя</label>
+					<input type="text" name="name" id="name" placeholder="Введите имя" class="form-control">
+					<br>
+					<label for="message">Сообщение</label>
+					<textarea name="message" id="message1" class="form-control" placeholder="Имя"></textarea>
+					<br>
+					<textarea name="message" id="message2" class="form-control" placeholder="Город"></textarea>
+					<br>
+					<textarea name="message" id="message3" class="form-control" placeholder="Растение"></textarea>
+					<br>
+					<textarea name="message" id="message4" class="form-control" placeholder="Животное"></textarea>
+					<br>
+					<textarea name="message" id="message5" class="form-control" placeholder="Река"></textarea>
+					<br>
+					<input type="submit" value="Отправить" class="btn btn-danger" id="button">
+				</form>
+			</div>
+
+		</div>
+
+
+
+
+	</div>
+	<!-- Подключаем jQuery, а также Socket.io -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script src="/socket.io/socket.io.js"></script>
+	<script>
+		// У каждого пользователя будет случайный стиль для блока с сообщенями,
+		// поэтому в этом кусочке кода мы получаем случайные числа
+		var min = 1;
+		var max = 6;
+		var random = Math.floor(Math.random() * (max - min)) + min;
+
+		// Устаналиваем класс в переменную в зависимости от случайного числа
+		// Эти классы взяты из Bootstrap стилей
+		var alertClass;
+		switch (connections.length) {
+			case 1:
+				alertClass = 'secondary';
+				break;
+			case 2:
+				alertClass = 'danger';
+				break;
+			case 3:
+				alertClass = 'success';
+				break;
+			case 4:
+				alertClass = 'warning';
+				break;
+			case 5:
+				alertClass = 'info';
+				break;
+			case 6:
+				alertClass = 'light';
+				break;
+		}
+
+		// Функция для работы с данными на сайте
+		$(function() {
+			// Включаем socket.io и отслеживаем все подключения
+			var socket = io.connect();
+			// Делаем переменные на:
+			var $form = $("#messForm"); // Форму сообщений
+			var $name = $("#name"); // Поле с именем
+			var $textarea1 = $("#message1"); // Текстовое поле
+			var $textarea2 = $("#message2"); // Текстовое поле
+			var $textarea3 = $("#message3"); // Текстовое поле
+			var $textarea4 = $("#message4"); // Текстовое поле
+			var $textarea5 = $("#message5"); // Текстовое поле
+			var $all_messages = $("#all_mess"); // Блок с сообщениями
+			
+
+			// Отслеживаем нажатие на кнопку в форме сообщений
+			$form.submit(function(event) {
+				// Предотвращаем классическое поведение формы
+				event.preventDefault();
+				// В сокет отсылаем новое событие 'send mess',
+				// в событие передаем различные параметры и данные
+				socket.emit('send mess', {mess: $textarea1.val() + $textarea2.val() + $textarea3.val() + $textarea4.val() + $textarea5.val(), name: $name.val(), className: alertClass});
+				// Очищаем поле с сообщением
+				$textarea.val('');
+			
+			});
+
+			// Здесь отслеживаем событие 'add mess', 
+			// которое должно приходить из сокета в случае добавления нового сообщения
+			socket.on('add mess', function(data) {
+				// Встраиваем полученное сообщение в блок с сообщениями
+				// У блока с сообщением будет тот класс, который соответвует пользователю что его от правил
+				$all_messages.append("<div class='alert alert-" + data.className + "'><b>" + data.name + "</b>: " + data.mess + "</div>");
+			});
+
+		});
+
+	</script>
+
+
+
+</body>
+</html>
